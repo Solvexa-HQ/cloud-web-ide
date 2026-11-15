@@ -1,0 +1,49 @@
+name: Deploy to AWS S3
+
+# main 브랜치에 코드가 Push될 때마다 자동으로 빌드 및 S3 배포 실행
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # GitHub 웹 UI에서 수동 실행도 가능하도록 허용
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소 최신 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node.js 20 환경 설정 및 npm 캐시 적용
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. 의존성 패키지 설치
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 프로덕션 빌드 (dist 폴더 생성)
+      # 보안: 모든 민감한 환경 변수는 GitHub Repository Secrets에서 주입받음
+      - name: Build production bundle (dist)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+        run: npm run build
+
+      # 5. AWS 자격 증명 설정 (GitHub Secrets 활용)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-northeast-2' }}
+
+      # 6. 빌드된 dist 폴더를 AWS S3 버킷에 동기화(--delete로 이전 불필요 파일 정리)
+      - name: Sync dist to AWS S3 bucket
+        run: aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
