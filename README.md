@@ -19,14 +19,14 @@ AWS EC2 컨테이너 샌드박스와 Supabase를 활용하여 모바일(폴더�
   - 비용 절약을 위해 AWS EC2 서버가 중지(OFF)된 상태이거나 네트워크가 불안정할 때 무한 대기하지 않도록 타임아웃(7초)을 적용하고 명확한 안내 메시지를 출력합니다.
 - **모바일 및 폴더블 최적화 UI**
   - `visualViewport` API를 통해 모바일 가상 키보드 활성화 시 레이아웃을 자동 조정하며, 빠른 기호 입력 바(`Tab`, `{}`, `()`, `;` 등)를 제공합니다.
-- **AWS S3 정적 웹 호스팅 및 GitHub Actions 자동 배포 (CI/CD)**
-  - `main` 브랜치에 Push할 때마다 GitHub Actions가 프로덕션 번들(`dist/`)을 빌드하여 AWS S3 버킷에 자동으로 동기화합니다.
+- **AWS S3 + CloudFront 정적 웹 호스팅 및 GitHub Actions 자동 배포 (CI/CD)**
+  - `main` 브랜치에 Push할 때마다 GitHub Actions가 프로덕션 번들(`dist/`)을 빌드하여 AWS S3 버킷에 자동으로 동기화하며, CloudFront를 통해 HTTPS 보안 연결로 서비스됩니다.
 
 ### 기술 스택
 - **Frontend**: React 19, Vite 8, Tailwind CSS v4, CodeMirror 6 (`@uiw/react-codemirror`), Lucide React
 - **Authentication & Database**: Supabase (`@supabase/supabase-js`, GitHub OAuth)
 - **Code Execution Backend**: AWS EC2 컨테이너 샌드박스 API + DuckDNS (DDNS)
-- **Deployment & CI/CD**: AWS S3 Static Website Hosting, GitHub Actions
+- **Deployment & CI/CD**: AWS S3 Static Website Hosting, AWS CloudFront (HTTPS), GitHub Actions
 
 ---
 
@@ -87,7 +87,11 @@ fold-ide-web/
      - `AWS_ACCESS_KEY_ID` : S3 업로드 권한(`AmazonS3FullAccess` 등)이 있는 AWS IAM 사용자의 Access Key
      - `AWS_SECRET_ACCESS_KEY` : 해당 IAM 사용자의 Secret Access Key
      - `AWS_S3_BUCKET` : 배포할 S3 버킷 이름 (예: `my-cloud-ide-bucket`)
-   - *(주의: S3 배포 완료 후 GitHub 로그인이 정상 동작하려면 **Supabase 콘솔 → Authentication → URL Configuration**의 `Site URL` 및 `Redirect URLs`에 S3 웹 사이트 엔드포인트 주소를 추가해야 합니다.)*
+   - *(주의: 배포 완료 후 GitHub 로그인이 정상 동작하려면 **Supabase 콘솔 → Authentication → URL Configuration**의 `Site URL` 및 `Redirect URLs`에 배포된 CloudFront/S3 주소를 추가해야 합니다.)*
+
+3. **AWS CloudFront 캐시 정책 및 즉시 반영(무효화/Invalidation) 안내**
+   - S3 앞단에 **AWS CloudFront(HTTPS)**를 연결하여 사용할 경우, CloudFront의 기본 캐시 유지 시간(TTL, 기본 24시간) 동안에는 S3에 새 파일이 업로드되어도 이전 `index.html`이 표시될 수 있습니다.
+   - 자연스럽게 24시간 뒤 캐시가 만료되면 최신 버전이 자동 반영되며, 배포 직후 즉시 반영이 필요한 경우에만 **AWS 콘솔 → CloudFront → 해당 배포 선택 → [무효화(Invalidations)] → [무효화 생성]**에서 객체 경로에 `/*`를 입력하여 일회성 캐시 초기화를 수행합니다. (완료된 무효화 내역은 단순 실행 기록이므로 별도로 삭제할 필요가 없으며 이후 다시 24시간 캐시 정책이 유지됩니다.)
 
 ---
 
