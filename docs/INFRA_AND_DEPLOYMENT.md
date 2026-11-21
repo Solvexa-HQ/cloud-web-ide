@@ -128,3 +128,15 @@ crontab -l
 # @reboot sleep 10 && ~/duckdns.sh
 # */5 * * * * ~/duckdns.sh
 ```
+
+---
+
+## 5. Supabase 무료 플랜 7일 비활성 일시 중지(Auto-Pause) 자동 방지 (`.github/workflows/supabase-keepalive.yml`)
+
+### 1) 문제 배경
+- Supabase 무료(Free) 플랜은 **7일 동안 데이터베이스 요청이 없으면 프로젝트를 자동으로 일시 중지(Pause)** 시킵니다.
+- 비용 절약을 위해 내 PC나 AWS EC2 서버를 꺼두는 경우가 많으므로, EC2에서 스케줄러를 돌리면 EC2가 꺼져 있는 동안에는 핑을 보낼 수 없습니다.
+
+### 2) 해결 방법 (GitHub Actions 24시간 주기 Keep-Alive)
+- 내 PC와 EC2가 모두 꺼져 있어도 365일 무료로 동작하는 **GitHub Actions 스케줄러(`cron: '0 15 * * *'`, 매일 한국 시간 자정 00:00)**를 이용해 24시간마다 Supabase REST API(`/rest/v1/snippets?select=id&limit=1`)로 가벼운 1건 조회 요청을 보내고 즉시 연결을 종료합니다.
+- 이미 GitHub Repository Secrets에 등록되어 있는 `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`를 그대로 사용하므로 별도의 추가 설정 없이 자동으로 일시 중지를 영구 방지합니다.

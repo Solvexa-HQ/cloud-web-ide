@@ -1,6 +1,6 @@
 # Cloud Web IDE (`cloud-web-ide`)
 
-> **[Solvexa-HQ](https://github.com/Solvexa-HQ) 웹 코딩 플랫폼 프로젝트 — Phase 1: Cloud Web IDE**  
+> **[Solvexa-HQ 메인 프로젝트 허브 (`solvexa-platform`)](https://github.com/Solvexa-HQ/solvexa-platform) — Phase 1: Cloud Web IDE**  
 > AWS(S3, CloudFront, EC2 컨테이너 샌드박스)와 Supabase를 활용하여 모바일(폴더블 포함), 태블릿, 데스크톱 환경 어디서나 코드를 작성·실행·저장할 수 있는 크로스플랫폼 클라우드 웹 IDE입니다.
 
 ---
@@ -46,13 +46,13 @@
 fold-ide-web/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml                # GitHub Actions 기반 AWS S3 자동 빌드 및 배포 워크플로우
+│       ├── deploy.yml                # GitHub Actions 기반 AWS S3 자동 빌드 및 배포 워크플로우
+│       └── supabase-keepalive.yml    # Supabase 무료 플랜 7일 비활성 일시 중지 방지용 24시간 주기 DB 핑 워크플로우
 ├── docs/                             # 1단계 Web IDE 상세 기술/운영 가이드 문서 폴더
 │   ├── ARCHITECTURE.md               # Web IDE 내부 동작 흐름 및 AWS/Supabase 시스템 아키텍처
 │   ├── INFRA_AND_DEPLOYMENT.md       # S3/CloudFront 배포, GitHub Secrets, EC2 SSH 및 DuckDNS 설정 가이드
 │   ├── COLLABORATION_GUIDE.md        # 로컬 개발 환경 구축(.env.example), 브랜치 전략 및 커밋 컨벤션
-│   ├── CHANGELOG.md                  # v1.0 ~ v1.4 버전별 전체 상세 변경 이력 (원문 보존)
-│   └── MAIN_HUB_README_TEMPLATE.md   # Solvexa-HQ 메인 허브 레포지토리용 README 템플릿 (1~3단계 안내용)
+│   └── CHANGELOG.md                  # v1.0 ~ v1.4 버전별 전체 상세 변경 이력 (원문 보존)
 ├── dist/                             # 프로덕션 빌드 산출물 폴더 (S3 업로드 대상, Git 추적 제외)
 ├── public/                           # 정적 에셋 폴더 (파비콘, 아이콘 SVG)
 ├── src/
@@ -84,7 +84,7 @@ fold-ide-web/
 | **[2. 인프라 운영 및 자동 배포 가이드 (`docs/INFRA_AND_DEPLOYMENT.md`)](./docs/INFRA_AND_DEPLOYMENT.md)** | AWS S3 정적 호스팅 및 버킷 정책 JSON, GitHub Actions 6대 Secrets 설정, CloudFront 24시간 캐시 정책 및 무효화(`/*`), EC2 SSH 접속 및 DuckDNS(`~/duckdns.sh`, `crontab`) 유동 IP 자동 갱신 전 과정 |
 | **[3. 공동작업 및 로컬 개발 가이드 (`docs/COLLABORATION_GUIDE.md`)](./docs/COLLABORATION_GUIDE.md)** | 팀원용 로컬 설치 절차(`.env.example` → `.env`), 스크립트 실행법, 브랜치 전략(`main`, `feat/*`, `fix/*`) 및 커밋 메시지 컨벤션 |
 | **[4. 버전별 상세 변경 이력 (`docs/CHANGELOG.md`)](./docs/CHANGELOG.md)** | 초기 `v1.0`부터 `v1.1`, `v1.2`, `v1.3`, `v1.4`까지 수정 전후 비교(기존 vs 변경), 문제 배경 및 해결 방법이 모두 포함된 전체 이력 문서 |
-| **[5. Solvexa-HQ 메인 허브 레포지토리 템플릿 (`docs/MAIN_HUB_README_TEMPLATE.md`)](./docs/MAIN_HUB_README_TEMPLATE.md)** | 그룹의 메인 진입점 레포지토리에서 전체 플랫폼(1단계 Web IDE 완성 중심 + 2·3단계 기본 틀)을 소개하고 각 레포지토리로 안내하기 위한 템플릿 |
+| **[5. Solvexa-HQ 전체 플랫폼 메인 허브 (`solvexa-platform`)](https://github.com/Solvexa-HQ/solvexa-platform)** | 그룹의 메인 진입점 레포지토리 (1단계 Web IDE + 2·3단계 전체 플랫폼 구조 안내) |
 
 ---
 

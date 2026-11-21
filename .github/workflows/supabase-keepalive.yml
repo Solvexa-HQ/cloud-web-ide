@@ -1,0 +1,30 @@
+name: Supabase DB Keep-Alive
+
+# Supabase 무료 플랜의 7일 비활성 일시 중지(Auto-Pause)를 방지하기 위해
+# 내 PC나 EC2가 꺼져 있어도 GitHub 서버에서 24시간마다 자동으로 DB에 가벼운 조회 요청(1건)을 전송합니다.
+on:
+  schedule:
+    - cron: '0 15 * * *' # 매일 한국 시간(KST) 자정 00:00 (UTC 15:00) 자동 실행
+  workflow_dispatch:     # GitHub Actions 탭에서 수동으로도 즉시 실행 가능
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send lightweight SELECT query to Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/snippets?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+          echo "Supabase Keep-Alive Ping HTTP Status: ${HTTP_STATUS}"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Successfully recorded database activity."
+          else
+            echo "Unexpected status code: ${HTTP_STATUS}"
+            exit 1
+          fi
